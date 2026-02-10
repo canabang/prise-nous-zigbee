@@ -42,16 +42,16 @@ J'essaie d'éteindre la prise 2 ? Tout s'éteint.
 Impossible de piloter les prises individuellement. La multiprise réagit comme un bloc unique, une simple multiprise "bête" pilotable en tout-ou-rien.
 Pire encore, en regardant les remontées d'énergie pour voir si au moins la consommation est suivie : **Rien**. Voltage à 0, Puissance à 0.
 
-![Paramètres spécifiques vides](images/parametres%20specifique%20avant%20fix.png)
-
-On se retrouve donc avec un produit inutilisable pour le projet initial. C'est là que l'enquête commence.
+On se retrouve donc avec un produit inutilisable pour le projet initial. Mais, comme je n'aime pas les echecs de ce genre, j'ai commencé a fouiner.
 
 ## 🕵️‍♂️ L'Enquête
 
 Face à ce comportement étrange, le premier réflexe est de vérifier si le problème est connu.
 Sur les forums et les groupes communautaires, la **Nous A11Z** est pourtant souvent recommandée pour sa compatibilité. De nombreux utilisateurs semblent l'utiliser sans encombre. S'agit-il d'un défaut de mon exemplaire ?
 
-En creusant davantage, on réalise que sous la même référence commerciale "A11Z" se cachent plusieurs versions matérielles. Les anciens modèles fonctionnent parfaitement, mais une nouvelle révision (identifiée par le code fabricant `_TZ3210_6cmeijtd`) semble poser problème depuis début 2026.
+En creusant davantage, on réalise que sous la même référence commerciale "A11Z" se cachent plusieurs versions matérielles.
+*   **Les anciens modèles** utilisaient des codes fabricants génériques Tuya (souvent commençant par `_TZ3000_...`) qui étaient correctement reconnus et fonctionnels.
+*   **La nouvelle révision (2026)**, identifiée par le code **`_TZ3210_6cmeijtd`**, utilise un firmware différent qui pose problème.
 
 C'est finalement sur le GitHub officiel du projet Zigbee2MQTT que je trouve la réponse. Une *issue* récente (numéro [#30799](https://github.com/Koenkk/zigbee2mqtt/issues/30799)) décrit exactement les mêmes symptômes : pilotage groupé et absence de mesures.
 Bonne nouvelle : la communauté est réactive ! Une solution technique a été proposée dans les commentaires et devrait être intégrée nativement dans une prochaine mise à jour de Zigbee2MQTT.
@@ -152,6 +152,13 @@ Dans Home Assistant, vous retrouvez désormais vos entités bien séparées :
 ![Intégration HA 2](images/ha%2002%20apres%20fix.png)
 
 *Note : La tension (Voltage) peut s'afficher autour de 20-23V au lieu de 230V, signe que le diviseur (10) pourrait être ajusté à 1 selon votre modèle exact, mais la commande fonctionne !*
+
+## 🧪 Tests à venir
+
+Plusieurs tests restent à faire avec cette multiprise notamment :
+*   Test de charge sur la durée (Lave-vaisselle / Cafetière).
+*   Validation de la stabilité du mesh Zigbee.
+*   Précision de la mesure de consommation dans le temps.
 
 ## Conclusion
 

@@ -34,8 +34,8 @@ L'appareil est reconnu comme un modèle `TS011F` par le fabricant `_TZ3210_6cmei
 
 ## 🤨 La Première Déconvenue
 C'est au moment du premier test que l'enthousiasme retombe.
-Je tente d'allumer la prise du lave-vaisselle (Prise 1)... et **clac-clac-clac**, les trois prises s'allument en même temps !
-J'essaie d'éteindre la cafetière (Prise 2) ? Tout s'éteint.
+Je tente d'allumer la prise 1... et **clac-clac-clac**, les trois prises s'allument en même temps !
+J'essaie d'éteindre la prise 2 ? Tout s'éteint.
 
 ![Animation du problème dans Home Assistant](images/ha%20avant%20fix.gif)
 

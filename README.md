@@ -56,6 +56,8 @@ En creusant davantage, on réalise que sous la même référence commerciale "A1
 C'est finalement sur le GitHub officiel du projet Zigbee2MQTT que je trouve la réponse. Une *issue* récente (numéro [#30799](https://github.com/Koenkk/zigbee2mqtt/issues/30799)) décrit exactement les mêmes symptômes : pilotage groupé et absence de mesures.
 Bonne nouvelle : la communauté est réactive ! Une solution technique a été proposée dans les commentaires et devrait être intégrée nativement dans une prochaine mise à jour de Zigbee2MQTT.
 
+*À noter que j'ai également testé la version **Dev** (Edge) de Zigbee2MQTT, et le correctif n'y est pas encore intégré à ce jour.*
+
 En attendant cette mise à jour officielle, voici comment appliquer le correctif manuellement dès aujourd'hui pour rendre la multiprise fonctionnelle immédiatement.
 
 ## 🛠️ La Solution : Le Convertisseur Externe "Unlocker"

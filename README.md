@@ -3,7 +3,7 @@
 ## Contexte et Choix du Produit
 Dans le cadre de nos partenariats, **HACF** a reçu une proposition de test de la part de **Domadoo** pour explorer leurs nouveautés. Mon choix s'est porté sur la multiprise connectée **Nous A11Z**.
 
-Pourquoi ce choix ? L'idée était de domotiser un "coin" complet avec un seul appareil. Si on pense souvent au coin TV (TV, ampli, console), j'avais pour ma part un autre scénario en tête : la **cuisine**. L'objectif est de piloter et mesurer la consommation d'appareils comme le lave-vaisselle et la cafetière, le tout sur une seule prise murale.
+Pourquoi ce choix ? L'idée était de domotiser un "coin" complet avec un seul appareil. Si on pense souvent au coin TV (TV, ampli, console), j'avais pour ma part un autre scénario en tête : la **cuisine**. L'objectif est de piloter et mesurer la consommation d'appareils comme le lave-vaisselle ou la cafetière, le tout sur une seule prise murale.
 
 ## 📦 Déballage et Design
 *(À compléter : Vos impressions sur le packaging, la qualité des plastiques, le form-factor, la longueur du câble, etc.)*
@@ -11,15 +11,25 @@ Pourquoi ce choix ? L'idée était de domotiser un "coin" complet avec un seul a
 ## 🔌 Installation et Appairage Z2M
 Passons aux choses sérieuses. L'appairage sous **Zigbee2MQTT** se fait classiquement : un appui long sur le bouton unique, la LED clignote, et Z2M détecte l'appareil.
 
-L'appareil est reconnu comme un modèle `TS011F` par le fabricant `_TZ3210_6cmeijtd`. Jusqu'ici, tout va bien. Les commandes apparaissent dans Home Assistant dés que l'interview est terminée.
+![Réseau Zigbee](images/reseau%20zigbee%20lqi.png)
+
+L'appareil est reconnu comme un modèle `TS011F` par le fabricant `_TZ3210_6cmeijtd`. Jusqu'ici, tout va bien. Les commandes apparaissent dans Home Assistant dés que l'interview est terminée. Mais...
+
+![Commandes avant fix](images/commande%20avant%20fix.png)
+
+![A propos avant fix](images/a%20propos%20avant%20fix.png)
 
 ## 🤨 La Première Déconvenue
 C'est au moment du premier test que l'enthousiasme retombe.
 Je tente d'allumer la prise du lave-vaisselle (Prise 1)... et **clac-clac-clac**, les trois prises s'allument en même temps !
 J'essaie d'éteindre la cafetière (Prise 2) ? Tout s'éteint.
 
+![Animation du problème dans Home Assistant](images/ha%20avant%20fix.gif)
+
 Impossible de piloter les prises individuellement. La multiprise réagit comme un bloc unique, une simple multiprise "bête" pilotable en tout-ou-rien.
 Pire encore, en regardant les remontées d'énergie pour voir si au moins la consommation est suivie : **Rien**. Voltage à 0, Puissance à 0.
+
+![Paramètres spécifiques vides](images/parametres%20specifique%20avant%20fix.png)
 
 On se retrouve donc avec un produit inutilisable pour le projet initial. C'est là que l'enquête commence.
 
@@ -28,7 +38,7 @@ On se retrouve donc avec un produit inutilisable pour le projet initial. C'est l
 Face à ce comportement étrange, le premier réflexe est de vérifier si le problème est connu.
 Sur les forums et les groupes communautaires, la **Nous A11Z** est pourtant souvent recommandée pour sa compatibilité. De nombreux utilisateurs semblent l'utiliser sans encombre. S'agit-il d'un défaut de mon exemplaire ?
 
-En creusant davantage, on réalise que sous la même référence commerciale "A11Z" se cachent plusieurs versions matérielles. Les anciens modèles fonctionnent parfaitement, mais une nouvelle révision (identifiée par le code fabricant `_TZ3210_6cmeijtd`) pose problème depuis début 2026.
+En creusant davantage, on réalise que sous la même référence commerciale "A11Z" se cachent plusieurs versions matérielles. Les anciens modèles fonctionnent parfaitement, mais une nouvelle révision (identifiée par le code fabricant `_TZ3210_6cmeijtd`) semble poser problème depuis début 2026.
 
 C'est finalement sur le GitHub officiel du projet Zigbee2MQTT que je trouve la réponse. Une *issue* récente (numéro [#30799](https://github.com/Koenkk/zigbee2mqtt/issues/30799)) décrit exactement les mêmes symptômes : pilotage groupé et absence de mesures.
 Bonne nouvelle : la communauté est réactive ! Une solution technique a été proposée dans les commentaires et devrait être intégrée nativement dans une prochaine mise à jour de Zigbee2MQTT.
@@ -118,7 +128,17 @@ external_converters:
 
 ### Étape 3 : Redémarrage
 
-Redémarrez Zigbee2MQTT. La multiprise devrait maintenant exposer correctement 3 switchs indépendants (`state_l1`, `state_l2`, `state_l3`) ainsi que les verrous enfants et les mémoires d'état. N'oubliez pas de cliquer sur "Reconfigurer" dans l'interface si les valeurs électriques semblent étranges au début.
+Redémarrez Zigbee2MQTT. Reconfigurer la multiprise ou désapairer et réapairer la multiprise. La multiprise devrait maintenant exposer correctement 3 switchs indépendants (`state_l1`, `state_l2`, `state_l3`) ainsi que les verrous enfants et les mémoires d'état. N'oubliez pas de cliquer sur "Reconfigurer" dans l'interface si les valeurs électriques semblent étranges au début.
+
+![Commandes individuelles Z2M](images/commandes%2001%20apres%20fix.png)
+![Détail commandes Z2M](images/commandes%2002%20apres%20fix.png)
+
+Dans Home Assistant, vous retrouvez désormais vos entités bien séparées :
+
+![Intégration HA 1](images/ha%2001%20apres%20fix.png)
+![Intégration HA 2](images/ha%2002%20apres%20fix.png)
+
+*Note : La tension (Voltage) peut s'afficher autour de 20-23V au lieu de 230V, signe que le diviseur (10) pourrait être ajusté à 1 selon votre modèle exact, mais la commande fonctionne !*
 
 ## Conclusion
 

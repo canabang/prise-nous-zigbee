@@ -8,6 +8,19 @@ Pourquoi ce choix ? L'idée était de domotiser un "coin" complet avec un seul a
 ## 📦 Déballage et Design
 *(À compléter : Vos impressions sur le packaging, la qualité des plastiques, le form-factor, la longueur du câble, etc.)*
 
+## ⚙️ Configuration de Test
+Pour ce test, la multiprise est intégrée dans un environnement complet :
+
+*   **Home Assistant** :
+    *   **Version** : HAOS (Core 2026.1.3, Supervisor 2026.02.1).
+    *   **OS** : Home Assistant OS 17.0.
+    *   **Matériel** : MiniPC N150 (16 Go RAM).
+
+*   **Zigbee2MQTT** :
+    *   **Version** : 2.8.0 (Installation Docker déportée).
+    *   **Hébergement** : VM sous Proxmox (Sur MiniPC Ryzen 7, 32 Go RAM).
+    *   **Contrôleur Zigbee** : SLZB-06M (PoE/Ethernet).
+
 ## 🔌 Installation et Appairage Z2M
 Passons aux choses sérieuses. L'appairage sous **Zigbee2MQTT** se fait classiquement : un appui long sur le bouton unique, la LED clignote, et Z2M détecte l'appareil.
 
@@ -128,7 +141,7 @@ external_converters:
 
 ### Étape 3 : Redémarrage
 
-Redémarrez Zigbee2MQTT. Reconfigurer la multiprise ou désapairer et réapairer la multiprise. La multiprise devrait maintenant exposer correctement 3 switchs indépendants (`state_l1`, `state_l2`, `state_l3`) ainsi que les verrous enfants et les mémoires d'état. N'oubliez pas de cliquer sur "Reconfigurer" dans l'interface si les valeurs électriques semblent étranges au début.
+Redémarrez Zigbee2MQTT. Reconfigurer la multiprise ou désapairer et réapairer la. Elle devrait maintenant exposer correctement 3 switchs indépendants (`state_l1`, `state_l2`, `state_l3`) ainsi que les verrous enfants et les mémoires d'état. N'oubliez pas de cliquer sur "Reconfigurer" dans l'interface si les valeurs électriques semblent étranges au début.
 
 ![Commandes individuelles Z2M](images/commandes%2001%20apres%20fix.png)
 ![Détail commandes Z2M](images/commandes%2002%20apres%20fix.png)

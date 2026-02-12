@@ -1,12 +1,12 @@
 # Test de la Multiprise Connectée Zigbee Nous A11Z
 
 ## Contexte et Choix du Produit
-Dans le cadre de nos partenariats, **HACF** a reçu une proposition de test de la part de **Domadoo** pour explorer leurs nouveautés. Mon choix s'est porté sur la multiprise connectée **Nous A11Z**.
+Dans le cadre de nos partenariats, **HACF** a reçu une proposition de test de la part de **Domadoo** pour explorer leurs nouveautés. Mon choix s'est porté sur la multiprise connectée **[Nous A11Z](https://www.domadoo.fr/fr/produits-de-domotique/8713-nous-multiprise-zigbee-avec-mesure-de-consommation-a11z.html)**.
 
 Pourquoi ce choix ? L'idée était de domotiser un "coin" complet avec un seul appareil. Si on pense souvent au coin TV (TV, ampli, console), j'avais pour ma part un autre scénario en tête : la **cuisine**. L'objectif est de piloter et mesurer la consommation d'appareils comme le lave-vaisselle ou la cafetière, le tout sur une seule prise murale.
 
 ## 📦 Déballage et Design
-*La prise arrive emballé dans un carton simple mais efficace portant les logo zigbeetomqtt et home assistant. Au déballage, elle semble de bonne facture, le plastique est de qualité et les finitions sont bonnes. Le câble est assez long (1.5m) pour une utilisation confortable. Le bouton unique est bien accessible et le voyant LED est visible mais pas trop agressif.*
+*La prise arrive emballée dans un carton simple mais efficace portant les logos Zigbee2MQTT et Home Assistant. Au déballage, elle semble de bonne facture, le plastique est de qualité et les finitions sont bonnes. Le câble est assez long (1.5m) pour une utilisation confortable. Le bouton unique est bien accessible et le voyant LED est visible mais pas trop agressif.*
 
 ![Packaging Nous A11Z](images/cartons.jpg)
 ![Prise Nous A11Z Déballée](images/prise%20deballe.jpg)
@@ -313,7 +313,9 @@ Plusieurs tests restent à faire avec cette multiprise notamment :
 
 ## Conclusion
 
-Une fois patchée, la **Nous A11Z** redevient l'excellent rapport qualité/prix qu'elle a toujours été. Les prises se commute bien une par une et la mesure de consommation est précise. Dommage que la mesure de consommation soit globale et pas par prise.
+Une fois patchée, la **Nous A11Z** redevient l'excellent rapport qualité/prix qu'elle a toujours été. Les prises commutent bien une par une et la mesure de consommation est précise. Dommage que la mesure de consommation soit globale et pas par prise.
+Je pensais l'utiliser en cuisine pour entre autres gérer le lave-vaisselle, mais finalement, à cause de cette mesure globale, elle va finir derrière une TV et un ampli.
+
 
 *   **Les +** : Qualité, 3 prises indépendantes, routeur Zigbee.
 *   **Les -** : Nécessite cette bidouille manuelle pour les modèles 2026 (`_TZ3210_6cmeijtd`) et la mesure de consommation est **globale** (pas de mesure par prise).

@@ -6,7 +6,9 @@ Dans le cadre de nos partenariats, **HACF** a reçu une proposition de test de l
 Pourquoi ce choix ? L'idée était de domotiser un "coin" complet avec un seul appareil. Si on pense souvent au coin TV (TV, ampli, console), j'avais pour ma part un autre scénario en tête : la **cuisine**. L'objectif est de piloter et mesurer la consommation d'appareils comme le lave-vaisselle ou la cafetière, le tout sur une seule prise murale.
 
 ## 📦 Déballage et Design
-*(À compléter : Vos impressions sur le packaging, la qualité des plastiques, le form-factor, la longueur du câble, etc.)*
+*La prise arrive emballé dans un carton simple mais efficace portant les logo zigbeetomqtt et home assistant. Au déballage, elle semble de bonne facture, le plastique est de qualité et les finitions sont bonnes. Le câble est assez long (1.5m) pour une utilisation confortable. Le bouton unique est bien accessible et le voyant LED est visible mais pas trop agressif.
+
+
 
 ## ⚙️ Configuration de Test
 Pour ce test, la multiprise est intégrée dans un environnement complet :
@@ -170,6 +172,16 @@ Dans Home Assistant, vous retrouvez désormais vos entités bien séparées :
 
 *Note : La tension (Voltage) peut s'afficher autour de 20-23V au lieu de 230V, signe que le diviseur (10) pourrait être ajusté à 1 selon votre modèle exact, mais la commande fonctionne !*
 
+### Étape 4 (Optionnelle) : Optimisation du Polling
+
+Pour avoir des **graphiques fluides** (comme ceux présentés dans cet article), il est recommandé de réduire l'intervalle de remontée des infos :
+1.  Dans **Zigbee2MQTT**, cliquez sur l'appareil **Nous A11Z**.
+2.  Allez dans l'onglet **Paramètres (Spécifique)**.
+3.  Cherchez **Measurement Poll Interval** et réglez-le sur **10 secondes** (au lieu de 60 par défaut).
+4.  Sauvegardez.
+
+Cela permet d'avoir une mesure quasi temps-réel, indispensable pour détecter les pics de consommation d'un cycle de lavage.
+
 ## ✅ Tests Effectués
 
 ### Test 01 : Calibration & Validation
@@ -208,6 +220,28 @@ Pour valider les mesures, une calibration a été effectuée avec une charge ré
         *   Estimer le temps restant intelligent.
         *   Envoyer des notifications précises ("Lave-vaisselle terminé ! Coût : 0.15€").
     *   *Résultats à venir après le premier cycle complet.*
+
+    **📅 Mise à jour : Analyse du premier cycle (Mode Eco)**
+    
+    Le test est concluant ! Voici ce que le Dashboard ApexCharts nous révèle sur un cycle complet :
+    
+    ![Fin de cycle Lave-Vaisselle](images/fin%20de%20cycle%20lave%20vaisselle.png)
+
+    **Analyse des Courbes :**
+    1.  **Les Pics de Chauffe (Orange)** : On distingue très nettement les phases où la résistance s'active pour chauffer l'eau (pics à ~2000W). C'est là que la consommation est la plus forte.
+    2.  **L'Activité Moteur (Bas du graphe)** : Entre les chauffe, la consommation retombe (pompes de cyclage/vidange), ce qui montre bien la phase de brassage.
+    3.  **Stabilité de la Tension (Bleu)** : Le graphique de tension (Voltage) reste très stable (~230V), prouvant que la ligne n'est pas surchargée malgré les appels de puissance.
+
+    *Conclusion : La prise encaisse parfaitement les 2000W+ répétés et le monitoring est d'une précision redoutable pour analyser l'état de santé de l'électroménager.*
+
+### Test 06 : Stress Test (Charge Maximale)
+*   **Protocole** : Lave-vaisselle en cycle de nettoyage (Chauffe ~2000W) + Aspirateur branché sur la même multiprise (Moteur ~800-1000W).
+*   **Objectif** : Pousser la multiprise dans ses retranchements (proche des 3000W / 13A) pour valider la stabilité de la connexion Zigbee et la sécurité (pas de chauffe anormale).
+### Test 06 : Stress Test (Charge Maximale)
+*   **Protocole** : Lave-vaisselle en cycle de nettoyage + Aspirateur branché sur la même multiprise.
+*   **Mesure** : Pic de puissance observé à **2353 W** (~10.2 A).
+*   **Observation** : Aucune chauffe détectée sur le boîtier de la multiprise après 5 minutes de test.
+*   **Validation** : ✅ La multiprise tient la charge sans broncher. La connexion Zigbee reste stable même sous forte charge.
 
 ### Autres Mesures & Observations
 
@@ -272,12 +306,11 @@ Pour les puristes, une vue détaillée basée sur `apexcharts-card` permet de zo
 ## 🧪 Tests à venir
 
 Plusieurs tests restent à faire avec cette multiprise notamment :
-*   Test de charge sur la durée (Lave-vaisselle / Cafetière).
 *   Validation de la stabilité du mesh Zigbee.
-*   Précision de la mesure de consommation dans le temps.
 
 ## Conclusion
 
-Une fois patchée, la **Nous A11Z** redevient l'excellent rapport qualité/prix qu'elle a toujours été.
+Une fois patchée, la **Nous A11Z** redevient l'excellent rapport qualité/prix qu'elle a toujours été. Les prises se commute bien une par une et la mesure de consommation est précise. Dommage que la mesure de consommation soit globale et pas par prise.
+
 *   **Les +** : Qualité, 3 prises indépendantes, routeur Zigbee.
 *   **Les -** : Nécessite cette bidouille manuelle pour les modèles 2026 (`_TZ3210_6cmeijtd`) et la mesure de consommation est **globale** (pas de mesure par prise).

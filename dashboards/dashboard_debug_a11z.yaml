@@ -26,11 +26,9 @@ cards:
               box-shadow: none !important;
               background: none !important;
             }
-      - type: custom:mushroom-entity-card
-        entity: sensor.multi_nous_energy_cost
-        primary_info: state
-        secondary_info: name
-        name: Coût
+      - type: custom:mushroom-template-card
+        primary: "{{ (states('sensor.compteur_nous_a11z_total')|float(0) * states('input_number.cout_du_kwh')|float(0)) | round(2) }} €"
+        secondary: "Coût ({{ states('input_number.cout_du_kwh') }} €/kWh)"
         icon: mdi:currency-eur
         icon_color: orange
         layout: vertical

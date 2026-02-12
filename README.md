@@ -178,6 +178,21 @@ Pour valider les mesures, une calibration a été effectuée avec une charge ré
     *   **Courant** : 0.11 A.
 *   **Conclusion du test** : La calibration du fichier `nous_a11z.js` est validée (`acPowerDivisor: 10` et `acVoltageDivisor: 1`). Et on valide aussi que la remontée consommation est **globale** (pas de mesure par prise, pour l'instant).
 
+### Test 02 : Mémoire d'État (Power Outage Memory)
+*   **Protocole** : Coupure brutale de l'alimentation alors que les prises sont dans des états différents (ON/OFF).
+*   **Résultat** : Au rétablissement du courant, chaque prise reprend exactement son état précédent.
+*   **Validation** : ✅ Fonctionnel (l'option `powerOutageMemory: true` du script est bien active).
+
+### Test 03 : Sécurité Enfant (Child Lock)
+*   **Protocole** : Activation du `child_lock` dans Z2M et tentative d'action physique sur le bouton de la multiprise.
+*   **Résultat** : Le bouton physique est désactivé, impossible d'éteindre/allumer manuellement.
+*   **Validation** : ✅ Fonctionnel.
+
+### Test 04 : Latence & Groupes (Pop-corn Effect)
+*   **Protocole** : Création d'un groupe Zigbee regroupant les 3 prises et envoi d'une commande unique (ON/OFF).
+*   **Résultat** : Les prises commutent en "cascade" (l'une après l'autre) et non simultanément (Effet "Pop-corn").
+*   **Conclusion** : Le firmware semble traiter les commandes séquentiellement, même via un groupe Zigbee. Pas de commutation instantanée synchronisée.
+
 ## 🧪 Tests à venir
 
 Plusieurs tests restent à faire avec cette multiprise notamment :

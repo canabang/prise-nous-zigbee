@@ -6,7 +6,10 @@ Dans le cadre de nos partenariats, **HACF** a reçu une proposition de test de l
 Pourquoi ce choix ? L'idée était de domotiser un "coin" complet avec un seul appareil. Si on pense souvent au coin TV (TV, ampli, console), j'avais pour ma part un autre scénario en tête : la **cuisine**. L'objectif est de piloter et mesurer la consommation d'appareils comme le lave-vaisselle ou la cafetière, le tout sur une seule prise murale.
 
 ## 📦 Déballage et Design
-*La prise arrive emballé dans un carton simple mais efficace portant les logo zigbeetomqtt et home assistant. Au déballage, elle semble de bonne facture, le plastique est de qualité et les finitions sont bonnes. Le câble est assez long (1.5m) pour une utilisation confortable. Le bouton unique est bien accessible et le voyant LED est visible mais pas trop agressif.
+*La prise arrive emballé dans un carton simple mais efficace portant les logo zigbeetomqtt et home assistant. Au déballage, elle semble de bonne facture, le plastique est de qualité et les finitions sont bonnes. Le câble est assez long (1.5m) pour une utilisation confortable. Le bouton unique est bien accessible et le voyant LED est visible mais pas trop agressif.*
+
+![Packaging Nous A11Z](images/cartons.jpg)
+![Prise Nous A11Z Déballée](images/prise%20deballe.jpg)
 
 
 

@@ -285,11 +285,230 @@ C'est la carte principale (Mushroom + Stack-in-card). Elle permet de :
 *   Piloter les 3 prises individuellement.
 *   "Cat Lock" 😺 : Sécurité enfant activable en un clic.
 
-<details>
-<summary>📋 Voir le code YAML (dashboards/dashboard_debug_a11z.yaml)</summary>
+Voici le code de la carte à ajouter à votre dashboard (nécessite `stack-in-card`, `mushroom` et `mini-graph-card`) :
 
-*Le code est disponible dans le fichier [`dashboards/dashboard_debug_a11z.yaml`](../dashboards/dashboard_debug_a11z.yaml)*
-</details>
+```yaml
+type: custom:stack-in-card
+keep:
+  background: false
+  box_shadow: false
+  margin: false
+  outer_padding: false
+  border_radius: false
+cards:
+  - type: horizontal-stack
+    cards:
+      - type: custom:mushroom-title-card
+        title: ⚡ Nous A11Z
+      #  subtitle: Laboratoire de Test
+      - type: custom:mushroom-entity-card
+        entity: sensor.multi_nous_energy
+        primary_info: state
+        secondary_info: name
+        name: Total kWh
+        icon: mdi:lightning-bolt-circle
+        icon_color: green
+        layout: vertical
+        card_mod:
+          style: |
+            ha-card {
+              border: none !important;
+              box-shadow: none !important;
+              background: none !important;
+            }
+      - type: custom:mushroom-template-card
+        primary: "{{ (states('sensor.compteur_nous_a11z_total')|float(0) * states('input_number.cout_du_kwh')|float(0)) | round(2) }} €"
+        secondary: "Coût ({{ states('input_number.cout_du_kwh') }} €/kWh)"
+        icon: mdi:currency-eur
+        icon_color: orange
+        layout: vertical
+        card_mod:
+          style: |
+            ha-card {
+              border: none !important;
+              box-shadow: none !important;
+              background: none !important;
+            }
+  - type: custom:mini-graph-card
+    entities:
+      - entity: sensor.multi_nous_power
+        name: Puissance
+        color: "#ff9800"
+    show:
+      graph: line
+      fill: true
+      labels: true
+      name: true
+      state: true
+      legend: false
+      icon: true
+      points: true
+      extrema: true
+      average: true
+    line_width: 3
+    height: 120
+    hours_to_show: 1
+    points_per_hour: 60
+    animate: true
+    color_thresholds:
+      - value: 0
+        color: "#4caf50"
+      - value: 100
+        color: "#ff9800"
+      - value: 2000
+        color: "#f44336"
+    card_mod:
+      style: |
+        ha-card {
+          margin-bottom: 0px !important;
+        }
+  - type: horizontal-stack
+    cards:
+      - type: custom:mushroom-template-card
+        primary: L1
+        secondary: "{{ states('switch.multi_nous_l1') }}"
+        icon: mdi:power-socket-eu
+        entity: switch.multi_nous_l1
+        icon_color: "{{ 'seagreen' if is_state('switch.multi_nous_l1', 'on') else 'grey' }}"
+        layout: vertical
+        tap_action:
+          action: toggle
+        card_mod:
+          style: |
+            ha-card {
+              background: {{ 'rgba(46, 139, 87, 0.1)' if is_state('switch.multi_nous_l1', 'on') else '' }} !important;
+              border: none !important;
+            }
+      - type: custom:mushroom-template-card
+        primary: L2
+        secondary: "{{ states('switch.multi_nous_l2') }}"
+        icon: mdi:power-socket-eu
+        entity: switch.multi_nous_l2
+        icon_color: "{{ 'seagreen' if is_state('switch.multi_nous_l2', 'on') else 'grey' }}"
+        layout: vertical
+        tap_action:
+          action: toggle
+        card_mod:
+          style: |
+            ha-card {
+              background: {{ 'rgba(46, 139, 87, 0.1)' if is_state('switch.multi_nous_l2', 'on') else '' }} !important;
+              border: none !important;
+            }
+      - type: custom:mushroom-template-card
+        primary: L3
+        secondary: "{{ states('switch.multi_nous_l3') }}"
+        icon: mdi:power-socket-eu
+        entity: switch.multi_nous_l3
+        icon_color: "{{ 'seagreen' if is_state('switch.multi_nous_l3', 'on') else 'grey' }}"
+        layout: vertical
+        tap_action:
+          action: toggle
+        card_mod:
+          style: |
+            ha-card {
+              background: {{ 'rgba(46, 139, 87, 0.1)' if is_state('switch.multi_nous_l3', 'on') else '' }} !important;
+              border: none !important;
+            }
+  - type: horizontal-stack
+    cards:
+      - type: custom:mini-graph-card
+        entities:
+          - sensor.multi_nous_voltage
+        name: Tension
+        icon: mdi:sine-wave
+        line_color: "#03a9f4"
+        line_width: 2
+        show:
+          graph: line
+          fill: fade
+          labels: true
+          name: true
+          state: true
+        height: 80
+        hours_to_show: 1
+        points_per_hour: 10
+        update_interval: 30
+        cache: false
+        smoothing: false
+        lower_bound: 210
+        upper_bound: 250
+        card_mod:
+          style: |
+            ha-card {
+              border: none !important;
+              box-shadow: none !important;
+              background: none !important;
+            }
+      - type: custom:mini-graph-card
+        entities:
+          - sensor.multi_nous_current
+        name: Courant
+        icon: mdi:current-ac
+        line_color: "#e91e63"
+        line_width: 2
+        show:
+          graph: line
+          fill: fade
+          labels: true
+          icon: true
+          name: true
+          state: true
+        height: 80
+        hours_to_show: 1
+        points_per_hour: 60
+        card_mod:
+          style: |
+            ha-card {
+              border: none !important;
+              box-shadow: none !important;
+              background: none !important;
+            }
+  - type: horizontal-stack
+    cards:
+      - type: custom:mushroom-template-card
+        primary: Général
+        secondary: Groupe Zigbee
+        icon: hue:plug-group
+        entity: switch.test_a11z
+        icon_color: "{{ 'seagreen' if is_state('switch.test_a11z', 'on') else 'grey' }}"
+        layout: horizontal
+        tap_action:
+          action: toggle
+        card_mod:
+          style: |
+            ha-card {
+              background: {{ 'rgba(46, 139, 87, 0.1)' if is_state('switch.test_a11z', 'on') else '' }} !important;
+              border: none !important;
+            }
+      - type: custom:mushroom-chips-card
+        chips:
+          - type: template
+            entity: sensor.multi_nous_linkquality
+            icon: mdi:wifi
+            content: "{{ states('sensor.multi_nous_linkquality') }} lqi"
+            icon_color: >-
+              {{ 'seagreen' if states('sensor.multi_nous_linkquality')|int > 100
+              else 'orange' }}
+            tap_action:
+              action: more-info
+          - type: template
+            entity: switch.multi_nous_child_lock
+            icon: mdi:cat
+            content: >-
+              {{ 'Activé' if is_state('switch.multi_nous_child_lock', 'on') else
+              'Désactivé' }}
+            icon_color: >-
+              {{ 'seagreen' if is_state('switch.multi_nous_child_lock', 'on')
+              else 'grey' }}
+            tap_action:
+              action: toggle
+        alignment: end
+        card_mod:
+          style: |
+            ha-card {
+              margin-top: 12px; 
+            }
+```
 
 ### 2. L'Analyseur de Cycle (Stats Auto)
 Un sensor intelligent qui détecte **automatiquement** quand la prise tourne (Start > 5W / Stop < 2W).
@@ -298,25 +517,463 @@ Il génère un rapport précis à la fin du cycle :
 *   **kWh** consommés sur CE cycle.
 *   **Mini/Max/Moy** pour la Puissance, Tension et Courant.
 
-C'est implémenté via un fichier *Package* `template` et une carte Mushroom compacte.
+**Installation :**
 
-<details>
-<summary>📋 Voir l'installation (templates/cycle_stats_nous.yaml)</summary>
+1.  Ajoutez ce code dans votre configuration `template:` sur Home Assistant (ou dans un fichier package) :
 
-1.  Copiez [`templates/cycle_stats_nous.yaml`](../templates/cycle_stats_nous.yaml) dans votre dossier templates.
-2.  Ajoutez la carte [`dashboards/dashboard_stats_nous.yaml`](../dashboards/dashboard_stats_nous.yaml) à votre dashboard.
-</details>
+```yaml
+- trigger:
+    # DÉMARRAGE DU CYCLE (Puissance > 5W pendant 10 sec)
+    - platform: numeric_state
+      entity_id: sensor.multi_nous_power
+      above: 5
+      for: "00:00:10"
+      id: "start"
+    
+    # FIN DU CYCLE (Puissance < 2W pendant 5 min)
+    - platform: numeric_state
+      entity_id: sensor.multi_nous_power
+      below: 2
+      for: "00:05:00"
+      id: "stop"
+    
+    # MISE À JOUR (Chaque changement de puissance, tension ou courant)
+    - platform: state
+      entity_id: 
+        - sensor.multi_nous_power
+        - sensor.multi_nous_voltage
+        - sensor.multi_nous_current
+      id: "update"
+
+  sensor:
+    - name: "Nous A11Z - Stats Cycle"
+      unique_id: nous_a11z_stats_cycle
+      icon: mdi:chart-box-outline
+      state: >
+        {% if trigger.id == 'start' %}
+          En cours
+        {% elif trigger.id == 'stop' %}
+          Terminé
+        {% else %}
+          {{ states('sensor.nous_a11z_stats_cycle') }}
+        {% endif %}
+      
+      attributes:
+        # --- COMPTEUR ECHANTILLONS (Pour moyennes) ---
+        scan_count: >
+          {% if trigger.id == 'start' %}
+            0
+          {% else %}
+            {{ this.attributes.scan_count | default(0) | int + 1 }}
+          {% endif %}
+
+        # --- TEMPS ---
+        start_time: >
+          {% if trigger.id == 'start' %}
+            {{ now().isoformat() }}
+          {% else %}
+            {{ this.attributes.start_time | default(now().isoformat()) }}
+          {% endif %}
+        
+        end_time: >
+          {% if trigger.id == 'start' %}
+            None
+          {% elif trigger.id == 'stop' %}
+            {{ now().isoformat() }}
+          {% else %}
+            {{ this.attributes.end_time | default('None') }}
+          {% endif %}
+        
+        duration: >
+          {% if this.attributes.start_time is defined and this.attributes.start_time != 'None' %}
+            {% set start = as_datetime(this.attributes.start_time) %}
+            {% set end = now() if trigger.id != 'stop' else as_datetime(now().isoformat()) %}
+            {{ (end - start).total_seconds() | int }}
+          {% else %}
+            0
+          {% endif %}
+
+        # --- ENERGIE ---
+        initial_energy: >
+          {% if trigger.id == 'start' %}
+            {{ states('sensor.multi_nous_energy') | float(0) }}
+          {% else %}
+            {{ this.attributes.initial_energy | default(states('sensor.multi_nous_energy') | float(0)) }}
+          {% endif %}
+        
+        energy_consumed: >
+          {% set current = states('sensor.multi_nous_energy') | float(0) %}
+          {% set initial = this.attributes.initial_energy | default(current) | float(0) %}
+          {{ (current - initial) | round(3) }}
+        
+        # ====================================================
+        # STATISTIQUES (Min > 0 / Max / Avg)
+        # ====================================================
+
+        # --- POWER (W) ---
+        avg_power: >
+          {# Methode Energie / Temps (Plus précis pour la puissance) #}
+          {% set energy = this.attributes.energy_consumed | default(0) | float(0) %}
+          {% set duration = this.attributes.duration | default(0) | float(0) %}
+          {% if duration > 10 %}
+            {{ ((energy * 1000) / (duration / 3600)) | round(1) }}
+          {% else %}
+            {{ states('sensor.multi_nous_power') | float(0) }}
+          {% endif %}
+
+        max_power: >
+          {% set val = states('sensor.multi_nous_power') | float(0) %}
+          {% if trigger.id == 'start' %}
+            {{ val }}
+          {% else %}
+            {{ [val, this.attributes.max_power | default(0) | float] | max }}
+          {% endif %}
+
+        min_power: >
+          {% set val = states('sensor.multi_nous_power') | float(0) %}
+          {% if trigger.id == 'start' %}
+            {{ val if val > 0 else 9999 }}
+          {% else %}
+            {% set current_min = this.attributes.min_power | default(9999) | float %}
+            {% if val > 0 %}
+              {{ [val, current_min] | min }}
+            {% else %}
+              {{ current_min }}
+            {% endif %}
+          {% endif %}
+
+        # --- VOLTAGE (V) ---
+        avg_voltage: >
+          {# Moyenne glissante : avg_new = avg_old + (val - avg_old) / count #}
+          {% set val = states('sensor.multi_nous_voltage') | float(0) %}
+          {% set count = this.attributes.scan_count | default(0) | int %}
+          {% if trigger.id == 'start' or count <= 1 %}
+            {{ val }}
+          {% else %}
+            {% set old_avg = this.attributes.avg_voltage | default(val) | float %}
+            {{ (old_avg + (val - old_avg) / count) | round(1) }}
+          {% endif %}
+
+        max_voltage: >
+          {% set val = states('sensor.multi_nous_voltage') | float(0) %}
+          {% if trigger.id == 'start' %}
+            {{ val }}
+          {% else %}
+            {{ [val, this.attributes.max_voltage | default(0) | float] | max }}
+          {% endif %}
+
+        min_voltage: >
+          {% set val = states('sensor.multi_nous_voltage') | float(0) %}
+          {% if trigger.id == 'start' %}
+            {{ val if val > 0 else 250 }}
+          {% else %}
+            {% set current_min = this.attributes.min_voltage | default(250) | float %}
+            {% if val > 0 %}
+              {{ [val, current_min] | min }}
+            {% else %}
+              {{ current_min }}
+            {% endif %}
+          {% endif %}
+
+        # --- CURRENT (A) ---
+        avg_current: >
+          {# Moyenne glissante #}
+          {% set val = states('sensor.multi_nous_current') | float(0) %}
+          {% set count = this.attributes.scan_count | default(0) | int %}
+          {% if trigger.id == 'start' or count <= 1 %}
+            {{ val }}
+          {% else %}
+            {% set old_avg = this.attributes.avg_current | default(val) | float %}
+            {{ (old_avg + (val - old_avg) / count) | round(2) }}
+          {% endif %}
+
+        max_current: >
+          {% set val = states('sensor.multi_nous_current') | float(0) %}
+          {% if trigger.id == 'start' %}
+            {{ val }}
+          {% else %}
+            {{ [val, this.attributes.max_current | default(0) | float] | max }}
+          {% endif %}
+
+        min_current: >
+          {% set val = states('sensor.multi_nous_current') | float(0) %}
+          {% if trigger.id == 'start' %}
+            {{ val if val > 0 else 99 }}
+          {% else %}
+            {% set current_min = this.attributes.min_current | default(99) | float %}
+            {% if val > 0 %}
+              {{ [val, current_min] | min }}
+            {% else %}
+              {{ current_min }}
+            {% endif %}
+          {% endif %}
+```
+
+2.  Ajoutez ensuite cette carte dans votre dashboard pour visualiser les résultats :
+
+```yaml
+type: vertical-stack
+cards:
+  # TITRE & INFOS GLOBALES
+  - type: custom:mushroom-template-card
+    primary: "Bilan du Cycle : {{ states('sensor.nous_a11z_stats_cycle') }}"
+    secondary: >-
+      {% set t = state_attr('sensor.nous_a11z_stats_cycle', 'duration') %}
+      {% set h = (t / 3600) | int %}
+      {% set m = ((t % 3600) / 60) | int %}
+      ⏱️ {{ h }}h {{ m }}m  |  ⚡ {{ state_attr('sensor.nous_a11z_stats_cycle', 'energy_consumed') }} kWh
+    icon: mdi:chart-timeline-variant
+    icon_color: teal
+    layout: horizontal
+    card_mod:
+      style: |
+        ha-card {
+          background: rgba(40, 40, 40, 0.5) !important;
+          border: none !important;
+        }
+
+  # 1. PUISSANCE (W)
+  - type: custom:mushroom-template-card
+    primary: "Puissance"
+    secondary: >-
+      Min: {{ state_attr('sensor.nous_a11z_stats_cycle', 'min_power') }} W  |  
+      Moy: {{ state_attr('sensor.nous_a11z_stats_cycle', 'avg_power') }} W  |  
+      Max: {{ state_attr('sensor.nous_a11z_stats_cycle', 'max_power') }} W
+    icon: mdi:lightning-bolt
+    icon_color: orange
+    layout: horizontal
+    multiline_secondary: true
+    card_mod:
+      style: |
+        ha-card {
+          background: none !important;
+          border: none !important;
+          box-shadow: none !important;
+        }
+
+  # 2. TENSION (V)
+  - type: custom:mushroom-template-card
+    primary: "Tension"
+    secondary: >-
+      Min: {{ state_attr('sensor.nous_a11z_stats_cycle', 'min_voltage') }} V  |  
+      Moy: {{ state_attr('sensor.nous_a11z_stats_cycle', 'avg_voltage') }} V  |  
+      Max: {{ state_attr('sensor.nous_a11z_stats_cycle', 'max_voltage') }} V
+    icon: mdi:sine-wave
+    icon_color: blue
+    layout: horizontal
+    multiline_secondary: true
+    card_mod:
+      style: |
+        ha-card {
+          background: none !important;
+          border: none !important;
+          box-shadow: none !important;
+        }
+
+  # 3. COURANT (A)
+  - type: custom:mushroom-template-card
+    primary: "Courant"
+    secondary: >-
+      Min: {{ state_attr('sensor.nous_a11z_stats_cycle', 'min_current') }} A  |  
+      Moy: {{ state_attr('sensor.nous_a11z_stats_cycle', 'avg_current') }} A  |  
+      Max: {{ state_attr('sensor.nous_a11z_stats_cycle', 'max_current') }} A
+    icon: mdi:current-ac
+    icon_color: green
+    layout: horizontal
+    multiline_secondary: true
+    card_mod:
+      style: |
+        ha-card {
+          background: none !important;
+          border: none !important;
+          box-shadow: none !important;
+        }
+```
 
 ### 3. Le "Debug" (Graphiques Précis)
 Pour les puristes, une vue détaillée basée sur `apexcharts-card` permet de zoomer sur les courbes de Tension, Courant et Puissance avec un échantillonnage fin et une moyenne glissante.
 
-<details>
-<summary>📋 Voir le code YAML (dashboards/dashboard_apex_a11z.yaml)</summary>
+Voici le code de la carte (nécessite `apexcharts-card`) :
 
-*Le code est disponible dans le fichier [`dashboards/dashboard_apex_a11z.yaml`](../dashboards/dashboard_apex_a11z.yaml)*
-</details>
+```yaml
+type: vertical-stack
+cards:
+  # 1. PUISSANCE
+  - type: custom:apexcharts-card
+    header:
+      show: true
+      title: "Puissance (W)"
+      show_states: true
+      colorize_states: true
+    graph_span: 3.5h
+    layout: minimal
+    apex_config:
+      chart:
+        height: 200
+        background: transparent
+        zoom:
+          enabled: true
+          type: x
+          autoScaleYaxis: true
+      stroke:
+        width: 1
+        curve: smooth
+      grid:
+        show: true
+        borderColor: '#404040'
+        strokeDashArray: 3
+    yaxis:
+      - id: power
+        show: true
+        decimals: 1
+    series:
+      - entity: sensor.multi_nous_power
+        name: Puissance
+        color: "#E69F00" # Orange
+        opacity: 0.8
+        group_by:
+          func: avg
+          duration: 30s
+        show:
+          extremas: true # Affiche Min/Max
+      
+      - entity: sensor.multi_nous_power
+        name: Moyenne (1h)
+        color: "#A9A9A9" # Gris
+        opacity: 0.5
+        group_by:
+          func: avg
+          duration: 1h
+        stroke_width: 2
+        show:
+          in_chart: false # Juste pour la légende
+          legend_value: true
+    card_mod:
+      style: |
+        ha-card {
+          background: none !important;
+          border: none !important;
+          box-shadow: none !important;
+        }
 
-## 🧪 Tests à venir
+  # 2. TENSION
+  - type: custom:apexcharts-card
+    header:
+      show: true
+      title: "Tension (V)"
+      show_states: true
+      colorize_states: true
+    graph_span: 3.5h
+    layout: minimal
+    apex_config:
+      chart:
+        height: 150
+        background: transparent
+        zoom:
+          enabled: true
+          type: x
+          autoScaleYaxis: true
+      stroke:
+        width: 1
+        curve: smooth
+      grid:
+        show: true
+        borderColor: '#404040'
+        strokeDashArray: 3
+    yaxis:
+      - id: voltage
+        show: true
+        decimals: 1
+        min: 210
+        max: 250
+    series:
+      - entity: sensor.multi_nous_voltage
+        name: Tension
+        color: "#56B4E9" # Bleu
+        stroke_width: 1
+        opacity: 0.7
+        group_by:
+          func: avg
+          duration: 1m
+        show:
+          extremas: true # Affiche Min/Max en labels
+      
+      - entity: sensor.multi_nous_voltage
+        name: Moyenne (1h)
+        color: "#A9A9A9"
+        group_by:
+          func: avg
+          duration: 1h
+        show:
+          in_chart: false
+          legend_value: true
+    card_mod:
+      style: |
+        ha-card {
+          background: none !important;
+          border: none !important;
+          box-shadow: none !important;
+        }
+
+  # 3. COURANT
+  - type: custom:apexcharts-card
+    header:
+      show: true
+      title: "Courant (A)"
+      show_states: true
+      colorize_states: true
+    graph_span: 3.5h
+    layout: minimal
+    apex_config:
+      chart:
+        height: 150
+        background: transparent
+        zoom:
+          enabled: true
+          type: x
+          autoScaleYaxis: true
+      stroke:
+        width: 1
+        curve: smooth
+      grid:
+        show: true
+        borderColor: '#404040'
+        strokeDashArray: 3
+    yaxis:
+      - id: current
+        show: true
+        decimals: 2
+    series:
+      - entity: sensor.multi_nous_current
+        name: Courant
+        color: "#009E73" # Vert
+        stroke_width: 1
+        group_by:
+          func: avg
+          duration: 30s
+        show:
+          legend_value: true
+          extremas: true # Affiche Min/Max
+      
+      - entity: sensor.multi_nous_current
+        name: Moyenne (1h)
+        color: "#A9A9A9"
+        group_by:
+          func: avg
+          duration: 1h
+        show:
+          in_chart: false
+          legend_value: true
+    card_mod:
+      style: |
+        ha-card {
+          background: none !important;
+          border: none !important;
+          box-shadow: none !important;
+        }
+```
+
+## 🧪 Tests
 
 Plusieurs tests restent à faire avec cette multiprise notamment :
 *   Validation de la stabilité du mesh Zigbee.

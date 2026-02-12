@@ -56,13 +56,13 @@ En creusant davantage, on réalise que sous la même référence commerciale "A1
 C'est finalement sur le GitHub officiel du projet Zigbee2MQTT que je trouve la réponse. Une *issue* récente (numéro [#30799](https://github.com/Koenkk/zigbee2mqtt/issues/30799)) décrit exactement les mêmes symptômes : pilotage groupé et absence de mesures.
 Bonne nouvelle : la communauté est réactive ! Une solution technique a été proposée dans les commentaires et devrait être intégrée nativement dans une prochaine mise à jour de Zigbee2MQTT.
 
-*À noter que j'ai également testé la version **Dev** de Zigbee2MQTT, et le correctif n'y est pas encore intégré à ce jour.*
+*À noter que j'ai également testé la version **Dev** (Edge) de Zigbee2MQTT, et le correctif n'y est pas encore intégré à ce jour.*
 
 En attendant cette mise à jour officielle, voici comment appliquer le correctif manuellement dès aujourd'hui pour rendre la multiprise fonctionnelle immédiatement.
 
 ## 🛠️ La Solution : Le Convertisseur Externe "Unlocker"
 
-Inutile de renvoyer le produit ! Grâce à la communauté, un convertisseur personnalisé permet de forcer le bon fonctionnement.
+Grâce à la communauté, un convertisseur personnalisé permet de contourner le problème et d'utiliser l'appareil normalement dès maintenant, sans attendre une mise à jour officielle.
 
 ### Étape 1 : Création du Fichier JS
 
@@ -70,9 +70,13 @@ Créez un fichier nommé `nous_a11z.js` dans le dossier de configuration de Zigb
 
 ```javascript
 const tuya = require('zigbee-herdsman-converters/lib/tuya');
+const utils = require('zigbee-herdsman-converters/lib/utils');
+const exposes = require('zigbee-herdsman-converters/lib/exposes');
+const e = exposes.presets;
+const ea = exposes.access;
 
 const definition = {
-    fingerprint: [{modelID: 'TS011F', manufacturerName: '_TZ3210_6cmeijtd'}],
+    fingerprint: [{ modelID: 'TS011F', manufacturerName: '_TZ3210_6cmeijtd' }],
     model: 'A11Z',
     vendor: 'Nous',
     description: 'Smart power strip 3 gang with energy monitoring & countdown',
@@ -106,25 +110,32 @@ const definition = {
 
     configure: async (device, coordinatorEndpoint, logger) => {
         const endpoint = device.getEndpoint(1);
-        
+
         // 1. Envoi du Magic Packet (Nécessaire pour séparer les canaux sur certains firmwares)
         await tuya.configureMagicPacket(device, coordinatorEndpoint, logger);
-        
+
         // 2. Calibration des Mesures Électriques
         // Le firmware _TZ3210_6cmeijtd renvoie des valeurs brutes nécessitant des diviseurs spécifiques.
+        // Test Validé :
+        // - Voltage : Diviseur 1 -> 226V (OK)
+        // - Puissance : Diviseur 10 -> ~26W (OK pour 25W lampe)
+        // - Courant : Diviseur 1000 -> 0.11A (OK)
+
         await endpoint.saveClusterAttributeKeyValue('haElectricalMeasurement', {
-            acCurrentDivisor: 1000, acCurrentMultiplier: 1,
+            acCurrentDivisor: 1000,
+            acCurrentMultiplier: 1,
             acVoltageDivisor: 1,    // 230V brut -> 230V affiché
             acVoltageMultiplier: 1,
-            acPowerDivisor: 1,      // 17W brut -> 17W affiché
+            acPowerDivisor: 10,     // 260 brut / 10 = 26W
             acPowerMultiplier: 1,
         });
-        
+
         // Configuration du metering (Energie cumulée)
         await endpoint.saveClusterAttributeKeyValue('seMetering', {
-            divisor: 100, multiplier: 1,
+            divisor: 100,
+            multiplier: 1,
         });
-        
+
         device.save();
     },
 };
@@ -154,6 +165,18 @@ Dans Home Assistant, vous retrouvez désormais vos entités bien séparées :
 ![Intégration HA 2](images/ha%2002%20apres%20fix.png)
 
 *Note : La tension (Voltage) peut s'afficher autour de 20-23V au lieu de 230V, signe que le diviseur (10) pourrait être ajusté à 1 selon votre modèle exact, mais la commande fonctionne !*
+
+## ✅ Tests Effectués
+
+### Test 01 : Calibration & Validation
+Pour valider les mesures, une calibration a été effectuée avec une charge résistive de référence (Lampe à incandescence "Lava Lamp" de 25W).
+
+*   **Protocole** : Mesure sur Prise 1, puis Prise 2.
+*   **Résultats après patch** :
+    *   **Tension** : 228 V (Cohérent réseau).
+    *   **Puissance** : 26 W (Pour 25W théorique -> Précision excellente).
+    *   **Courant** : 0.11 A.
+*   **Conclusion du test** : La calibration du fichier `nous_a11z.js` est validée (`acPowerDivisor: 10` et `acVoltageDivisor: 1`). Et on valide aussi que la remontée consommation est **globale** (pas de mesure par prise, pour l'instant).
 
 ## 🧪 Tests à venir
 

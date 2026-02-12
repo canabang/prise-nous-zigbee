@@ -1,0 +1,222 @@
+type: custom:stack-in-card
+keep:
+  background: false
+  box_shadow: false
+  margin: false
+  outer_padding: false
+  border_radius: false
+cards:
+  - type: horizontal-stack
+    cards:
+      - type: custom:mushroom-title-card
+        title: ⚡ Nous A11Z
+      #  subtitle: Laboratoire de Test
+      - type: custom:mushroom-entity-card
+        entity: sensor.multi_nous_energy
+        primary_info: state
+        secondary_info: name
+        name: Total kWh
+        icon: mdi:lightning-bolt-circle
+        icon_color: green
+        layout: vertical
+        card_mod:
+          style: |
+            ha-card {
+              border: none !important;
+              box-shadow: none !important;
+              background: none !important;
+            }
+      - type: custom:mushroom-entity-card
+        entity: sensor.multi_nous_energy_cost
+        primary_info: state
+        secondary_info: name
+        name: Coût
+        icon: mdi:currency-eur
+        icon_color: orange
+        layout: vertical
+        card_mod:
+          style: |
+            ha-card {
+              border: none !important;
+              box-shadow: none !important;
+              background: none !important;
+            }
+  - type: custom:mini-graph-card
+    entities:
+      - entity: sensor.multi_nous_power
+        name: Puissance
+        color: "#ff9800"
+    show:
+      graph: line
+      fill: true
+      labels: true
+      name: true
+      state: true
+      legend: false
+      icon: true
+      points: true
+      extrema: true
+      average: true
+    line_width: 3
+    height: 120
+    hours_to_show: 1
+    points_per_hour: 60
+    animate: true
+    color_thresholds:
+      - value: 0
+        color: "#4caf50"
+      - value: 100
+        color: "#ff9800"
+      - value: 2000
+        color: "#f44336"
+    card_mod:
+      style: |
+        ha-card {
+          margin-bottom: 0px !important;
+        }
+  - type: horizontal-stack
+    cards:
+      - type: custom:mushroom-template-card
+        primary: L1
+        secondary: "{{ states('switch.multi_nous_l1') }}"
+        icon: mdi:power-socket-eu
+        entity: switch.multi_nous_l1
+        icon_color: "{{ 'seagreen' if is_state('switch.multi_nous_l1', 'on') else 'grey' }}"
+        layout: vertical
+        tap_action:
+          action: toggle
+        card_mod:
+          style: |
+            ha-card {
+              background: {{ 'rgba(46, 139, 87, 0.1)' if is_state('switch.multi_nous_l1', 'on') else '' }} !important;
+              border: none !important;
+            }
+      - type: custom:mushroom-template-card
+        primary: L2
+        secondary: "{{ states('switch.multi_nous_l2') }}"
+        icon: mdi:power-socket-eu
+        entity: switch.multi_nous_l2
+        icon_color: "{{ 'seagreen' if is_state('switch.multi_nous_l2', 'on') else 'grey' }}"
+        layout: vertical
+        tap_action:
+          action: toggle
+        card_mod:
+          style: |
+            ha-card {
+              background: {{ 'rgba(46, 139, 87, 0.1)' if is_state('switch.multi_nous_l2', 'on') else '' }} !important;
+              border: none !important;
+            }
+      - type: custom:mushroom-template-card
+        primary: L3
+        secondary: "{{ states('switch.multi_nous_l3') }}"
+        icon: mdi:power-socket-eu
+        entity: switch.multi_nous_l3
+        icon_color: "{{ 'seagreen' if is_state('switch.multi_nous_l3', 'on') else 'grey' }}"
+        layout: vertical
+        tap_action:
+          action: toggle
+        card_mod:
+          style: |
+            ha-card {
+              background: {{ 'rgba(46, 139, 87, 0.1)' if is_state('switch.multi_nous_l3', 'on') else '' }} !important;
+              border: none !important;
+            }
+  - type: horizontal-stack
+    cards:
+      - type: custom:mini-graph-card
+        entities:
+          - sensor.multi_nous_voltage
+        name: Tension
+        icon: mdi:sine-wave
+        line_color: "#03a9f4"
+        line_width: 2
+        show:
+          graph: line
+          fill: fade
+          labels: true
+          name: true
+          state: true
+        height: 80
+        hours_to_show: 1
+        points_per_hour: 10
+        update_interval: 30
+        cache: false
+        smoothing: false
+        lower_bound: 210
+        upper_bound: 250
+        card_mod:
+          style: |
+            ha-card {
+              border: none !important;
+              box-shadow: none !important;
+              background: none !important;
+            }
+      - type: custom:mini-graph-card
+        entities:
+          - sensor.multi_nous_current
+        name: Courant
+        icon: mdi:current-ac
+        line_color: "#e91e63"
+        line_width: 2
+        show:
+          graph: line
+          fill: fade
+          labels: true
+          icon: true
+          name: true
+          state: true
+        height: 80
+        hours_to_show: 1
+        points_per_hour: 60
+        card_mod:
+          style: |
+            ha-card {
+              border: none !important;
+              box-shadow: none !important;
+              background: none !important;
+            }
+  - type: horizontal-stack
+    cards:
+      - type: custom:mushroom-template-card
+        primary: Général
+        secondary: Groupe Zigbee
+        icon: hue:plug-group
+        entity: switch.test_a11z
+        icon_color: "{{ 'seagreen' if is_state('switch.test_a11z', 'on') else 'grey' }}"
+        layout: horizontal
+        tap_action:
+          action: toggle
+        card_mod:
+          style: |
+            ha-card {
+              background: {{ 'rgba(46, 139, 87, 0.1)' if is_state('switch.test_a11z', 'on') else '' }} !important;
+              border: none !important;
+            }
+      - type: custom:mushroom-chips-card
+        chips:
+          - type: template
+            entity: sensor.multi_nous_linkquality
+            icon: mdi:wifi
+            content: "{{ states('sensor.multi_nous_linkquality') }} lqi"
+            icon_color: >-
+              {{ 'seagreen' if states('sensor.multi_nous_linkquality')|int > 100
+              else 'orange' }}
+            tap_action:
+              action: more-info
+          - type: template
+            entity: switch.multi_nous_child_lock
+            icon: mdi:cat
+            content: >-
+              {{ 'Activé' if is_state('switch.multi_nous_child_lock', 'on') else
+              'Désactivé' }}
+            icon_color: >-
+              {{ 'seagreen' if is_state('switch.multi_nous_child_lock', 'on')
+              else 'grey' }}
+            tap_action:
+              action: toggle
+        alignment: end
+        card_mod:
+          style: |
+            ha-card {
+              margin-top: 12px; 
+            }

@@ -108,6 +108,9 @@ const definition = {
         }),
     ],
 
+    // Illustration du Polling
+    // ![Poll Interval](images/poll%20interval.png)
+
     configure: async (device, coordinatorEndpoint, logger) => {
         const endpoint = device.getEndpoint(1);
 
@@ -192,6 +195,78 @@ Pour valider les mesures, une calibration a été effectuée avec une charge ré
 *   **Protocole** : Création d'un groupe Zigbee regroupant les 3 prises et envoi d'une commande unique (ON/OFF).
 *   **Résultat** : Les prises commutent en "cascade" (l'une après l'autre) et non simultanément (Effet "Pop-corn").
 *   **Conclusion** : Le firmware semble traiter les commandes séquentiellement, même via un groupe Zigbee. Pas de commutation instantanée synchronisée.
+
+### Test 05 : Lave-Vaisselle (Charge Réelle)
+*   **Protocole** : Cycle complet de lavage (Mode Eco ou Intensif). Suivi de la puissance crête et de la consommation totale.
+*   **Intérêts** : Valider la tenue de charge sur la durée et la précision du cumul kWh.
+*   **Outils utilisés** :
+    *   **Dashboard Energie Home Assistant** : Pour le suivi du coût global (en intégrant le capteur `sensor.multi_nous_energy`).
+    *   **Intégration [HA WashData](https://github.com/3dg1luk43/ha_washdata)** : Une pépite découverte récemment ! Elle permet de :
+        *   Détecter automatiquement les cycles (Lavage, Séchage, Fin).
+        *   Reconnaître les programmes spécifiques (Eco, Rapide) via la signature de consommation.
+        *   Estimer le temps restant intelligent.
+        *   Envoyer des notifications précises ("Lave-vaisselle terminé ! Coût : 0.15€").
+    *   *Résultats à venir après le premier cycle complet.*
+
+### Autres Mesures & Observations
+
+En plus du test de calibration (Lampe 25W), voici quelques relevés intéressants sur des appareils du quotidien :
+
+**1. Machine à Café (Pic de Courant)**
+On observe bien les cycles de chauffe (résistance) :
+![Test Cafetière](images/test%20cafetiere%20power%20courant.png)
+
+**2. Machine Sous-Vide (Moteur)**
+Profil typique d'un moteur électrique :
+![Test Machine Sous-vide](images/test%20machine%20sous%20vide.png)
+
+**3. Consommation à Vide (Standby)**
+La multiprise elle-même consomme très peu (mesuré à 0W par Z2M, < 0.5W réel probablement) :
+![Consommation à vide](images/puissance%20a%20vide%20z2m.png)
+
+## 🎁 Bonus : Le Dashboard de Monitoring Complet
+
+Pour surveiller cette multiprise durant mes tests (et surtout surveiller la consommation du lave-vaisselle !), je me suis concocté un **Dashboard complet** composé de 3 modules complémentaires.
+
+![Dashboard Complet](images/dashboard.png)
+
+### 1. Le "Monitor" (Vue Générale)
+C'est la carte principale (Mushroom + Stack-in-card). Elle permet de :
+*   Voir la conso totale et le coût instantané.
+*   Suivre la puissance en direct (Mini Graph).
+*   Piloter les 3 prises individuellement.
+*   "Cat Lock" 😺 : Sécurité enfant activable en un clic.
+
+<details>
+<summary>📋 Voir le code YAML (dashboard_debug_a11z.yaml)</summary>
+
+*Le code est disponible dans le fichier [`dashboard_debug_a11z.yaml`](dashboard_debug_a11z.yaml)*
+</details>
+
+### 2. L'Analyseur de Cycle (Stats Auto)
+Un sensor intelligent qui détecte **automatiquement** quand la prise tourne (Start > 5W / Stop < 2W).
+Il génère un rapport précis à la fin du cycle :
+*   **Temps** du cycle.
+*   **kWh** consommés sur CE cycle.
+*   **Mini/Max/Moy** pour la Puissance, Tension et Courant.
+
+C'est implémenté via un fichier *Package* `template` et une carte Mushroom compacte.
+
+<details>
+<summary>📋 Voir l'installation (cycle_stats_nous.yaml)</summary>
+
+1.  Copiez [`cycle_stats_nous.yaml`](cycle_stats_nous.yaml) dans votre dossier templates.
+2.  Ajoutez la carte [`dashboard_stats_nous.yaml`](dashboard_stats_nous.yaml) à votre dashboard.
+</details>
+
+### 3. Le "Debug" (Graphiques Précis)
+Pour les puristes, une vue détaillée basée sur `apexcharts-card` permet de zoomer sur les courbes de Tension, Courant et Puissance avec un échantillonnage fin et une moyenne glissante.
+
+<details>
+<summary>📋 Voir le code YAML (dashboard_apex_a11z.yaml)</summary>
+
+*Le code est disponible dans le fichier [`dashboard_apex_a11z.yaml`](dashboard_apex_a11z.yaml)*
+</details>
 
 ## 🧪 Tests à venir
 

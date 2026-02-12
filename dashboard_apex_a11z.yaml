@@ -1,0 +1,175 @@
+type: vertical-stack
+cards:
+  # 1. PUISSANCE
+  - type: custom:apexcharts-card
+    header:
+      show: true
+      title: "Puissance (W)"
+      show_states: true
+      colorize_states: true
+    graph_span: 3.5h
+    layout: minimal
+    apex_config:
+      chart:
+        height: 200
+        background: transparent
+        zoom:
+          enabled: true
+          type: x
+          autoScaleYaxis: true
+      stroke:
+        width: 1
+        curve: smooth
+      grid:
+        show: true
+        borderColor: '#404040'
+        strokeDashArray: 3
+    yaxis:
+      - id: power
+        show: true
+        decimals: 1
+    series:
+      - entity: sensor.multi_nous_power
+        name: Puissance
+        color: "#E69F00" # Orange
+        opacity: 0.8
+        group_by:
+          func: avg
+          duration: 30s
+        show:
+          extremas: true # Affiche Min/Max
+      
+      - entity: sensor.multi_nous_power
+        name: Moyenne (1h)
+        color: "#A9A9A9" # Gris
+        opacity: 0.5
+        group_by:
+          func: avg
+          duration: 1h
+        stroke_width: 2
+        show:
+          in_chart: false # Juste pour la légende
+          legend_value: true
+    card_mod:
+      style: |
+        ha-card {
+          background: none !important;
+          border: none !important;
+          box-shadow: none !important;
+        }
+
+  # 2. TENSION
+  - type: custom:apexcharts-card
+    header:
+      show: true
+      title: "Tension (V)"
+      show_states: true
+      colorize_states: true
+    graph_span: 3.5h
+    layout: minimal
+    apex_config:
+      chart:
+        height: 150
+        background: transparent
+        zoom:
+          enabled: true
+          type: x
+          autoScaleYaxis: true
+      stroke:
+        width: 1
+        curve: smooth
+      grid:
+        show: true
+        borderColor: '#404040'
+        strokeDashArray: 3
+    yaxis:
+      - id: voltage
+        show: true
+        decimals: 1
+        min: 210
+        max: 250
+    series:
+      - entity: sensor.multi_nous_voltage
+        name: Tension
+        color: "#56B4E9" # Bleu
+        stroke_width: 1
+        opacity: 0.7
+        group_by:
+          func: avg
+          duration: 1m
+        show:
+          extremas: true # Affiche Min/Max en labels
+      
+      - entity: sensor.multi_nous_voltage
+        name: Moyenne (1h)
+        color: "#A9A9A9"
+        group_by:
+          func: avg
+          duration: 1h
+        show:
+          in_chart: false
+          legend_value: true
+    card_mod:
+      style: |
+        ha-card {
+          background: none !important;
+          border: none !important;
+          box-shadow: none !important;
+        }
+
+  # 3. COURANT
+  - type: custom:apexcharts-card
+    header:
+      show: true
+      title: "Courant (A)"
+      show_states: true
+      colorize_states: true
+    graph_span: 3.5h
+    layout: minimal
+    apex_config:
+      chart:
+        height: 150
+        background: transparent
+        zoom:
+          enabled: true
+          type: x
+          autoScaleYaxis: true
+      stroke:
+        width: 1
+        curve: smooth
+      grid:
+        show: true
+        borderColor: '#404040'
+        strokeDashArray: 3
+    yaxis:
+      - id: current
+        show: true
+        decimals: 2
+    series:
+      - entity: sensor.multi_nous_current
+        name: Courant
+        color: "#009E73" # Vert
+        stroke_width: 1
+        group_by:
+          func: avg
+          duration: 30s
+        show:
+          legend_value: true
+          extremas: true # Affiche Min/Max
+      
+      - entity: sensor.multi_nous_current
+        name: Moyenne (1h)
+        color: "#A9A9A9"
+        group_by:
+          func: avg
+          duration: 1h
+        show:
+          in_chart: false
+          legend_value: true
+    card_mod:
+      style: |
+        ha-card {
+          background: none !important;
+          border: none !important;
+          box-shadow: none !important;
+        }

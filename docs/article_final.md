@@ -1,15 +1,27 @@
+---
+title: "Test de la Multiprise Connectée Zigbee Nous A11Z : Le retour du roi ?"
+excerpt: "La célèbre multiprise Nous A11Z a fait peau neuve, mais cette révision 2026 cache un défaut de jeunesse. Voici comment la dompter et la transformer en outil de monitoring ultime pour votre électroménager."
+tags: ["#test", "#zigbee", "#nous", "#pub", "#toc"]
+meta_title: "Test Nous A11Z Zigbee : Installation, Fix et Monitoring Lave-Vaisselle"
+meta_description: "Test complet de la nouvelle multiprise Nous A11Z (2026). Problème de firmware, solution via Zigbee2MQTT et monitoring de consommation d'un lave-vaisselle."
+image: "../images/prise%20deballe.jpg"
+---
+
 # Test de la Multiprise Connectée Zigbee Nous A11Z
 
 ## Contexte et Choix du Produit
 Dans le cadre de nos partenariats, **HACF** a reçu une proposition de test de la part de **Domadoo** pour explorer leurs nouveautés. Mon choix s'est porté sur la multiprise connectée **[Nous A11Z](https://www.domadoo.fr/fr/produits-de-domotique/8713-nous-multiprise-zigbee-avec-mesure-de-consommation-a11z.html)**.
 
-Pourquoi ce choix ? L'idée était de domotiser un "coin" complet avec un seul appareil. Si on pense souvent au coin TV (TV, ampli, console), j'avais pour ma part un autre scénario en tête : la **cuisine**. L'objectif est de piloter et mesurer la consommation d'appareils comme le lave-vaisselle ou la cafetière, le tout sur une seule prise murale.
+*Pourquoi ce choix ?* L'idée était de domotiser un "coin" complet avec un seul appareil. Si on pense souvent au coin TV (TV, ampli, console), j'avais pour ma part un autre scénario en tête : la **cuisine**. L'objectif est de piloter et mesurer la consommation d'appareils comme le lave-vaisselle ou la cafetière, le tout sur une seule prise murale.
 
 ## 📦 Déballage et Design
 *La prise arrive emballée dans un carton simple mais efficace portant les logos Zigbee2MQTT et Home Assistant. Au déballage, elle semble de bonne facture, le plastique est de qualité et les finitions sont bonnes. Le câble est assez long (1.5m) pour une utilisation confortable. Le bouton unique est bien accessible et le voyant LED est visible mais pas trop agressif.*
 
 ![Packaging Nous A11Z](../images/cartons.jpg)
+*Le packaging simple et efficace.*
+
 ![Prise Nous A11Z Déballée](../images/prise%20deballe.jpg)
+*La multiprise une fois déballée.*
 
 ## ⚙️ Configuration de Test
 Pour ce test, la multiprise est intégrée dans un environnement complet :
@@ -211,7 +223,7 @@ Pour valider les mesures, une calibration a été effectuée avec une charge ré
 *   **Conclusion** : Le firmware semble traiter les commandes séquentiellement, même via un groupe Zigbee. Pas de commutation instantanée synchronisée.
 
 ### Test 05 : Lave-Vaisselle (Charge Réelle)
-*   **Protocole** : Cycle complet de lavage (Mode Eco ou Intensif). Suivi de la puissance crête et de la consommation totale.
+*   **Protocole** : Cycle complet de lavage en mode Intensif. Suivi de la puissance crête et de la consommation totale.
 *   **Intérêts** : Valider la tenue de charge sur la durée et la précision du cumul kWh.
 *   **Outils utilisés** :
     *   **Dashboard Energie Home Assistant** : Pour le suivi du coût global (en intégrant le capteur `sensor.multi_nous_energy`).
@@ -222,7 +234,7 @@ Pour valider les mesures, une calibration a été effectuée avec une charge ré
         *   Envoyer des notifications précises ("Lave-vaisselle terminé ! Coût : 0.15€").
     *   *Résultats à venir après le premier cycle complet.*
 
-    **📅 Mise à jour : Analyse du premier cycle (Mode Eco)**
+    **📅 Mise à jour : Analyse du premier cycle (Mode Intensif)**
     
     Le test est concluant ! Voici ce que le Dashboard ApexCharts nous révèle sur un cycle complet :
     
@@ -248,14 +260,17 @@ En plus du test de calibration (Lampe 25W), voici quelques relevés intéressant
 **1. Machine à Café (Pic de Courant)**
 On observe bien les cycles de chauffe (résistance) :
 ![Test Cafetière](../images/test%20cafetiere%20power%20courant.png)
+*Les cycles de chauffe de la cafetière sont parfaitement visibles.*
 
 **2. Machine Sous-Vide (Moteur)**
 Profil typique d'un moteur électrique :
 ![Test Machine Sous-vide](../images/test%20machine%20sous%20vide.png)
+*Signature typique d'un moteur : appel de courant au démarrage.*
 
 **3. Consommation à Vide (Standby)**
 La multiprise elle-même consomme très peu (mesuré à 0W par Z2M, < 0.5W réel probablement) :
 ![Consommation à vide](../images/puissance%20a%20vide%20z2m.png)
+*La consommation à vide est négligeable.*
 
 ## 🎁 Bonus : Le Dashboard de Monitoring Complet
 
@@ -308,9 +323,14 @@ Plusieurs tests restent à faire avec cette multiprise notamment :
 
 ## Conclusion
 
-Une fois patchée, la **Nous A11Z** redevient l'excellent rapport qualité/prix qu'elle a toujours été. Les prises commutent bien une par une et la mesure de consommation est précise. Dommage que la mesure de consommation soit globale et pas par prise.
-Je pensais l'utiliser en cuisine pour entre autres gérer le lave-vaisselle, mais finalement, à cause de cette mesure globale, elle va finir derrière une TV et un ampli.
+Une fois patchée, la **Nous A11Z** redevient l'excellent rapport qualité/prix qu'elle a toujours été. Les prises commutent bien une par une et la mesure de consommation est précise.
+Dommage que la mesure de consommation soit **globale** et pas par prise individuelle, ce qui peut limiter certains usages précis.
 
+Je pensais l'utiliser en cuisine pour entre autres gérer le lave-vaisselle, mais finalement, à cause de cette mesure globale, elle va finir derrière une TV et un ampli pour couper les veilles.
 
-*   **Les +** : Qualité, 3 prises indépendantes, routeur Zigbee.
-*   **Les -** : Nécessite cette bidouille manuelle pour les modèles 2026 (`_TZ3210_6cmeijtd`) et la mesure de consommation est **globale** (pas de mesure par prise).
+### Résumé
+*   ✅ **Les +** : Qualité de fabrication, 3 prises indépendantes, routeur Zigbee stable, Prix.
+*   ❌ **Les -** : Nécessite un correctif manuel (pour l'instant) sur les modèles 2026, mesure de consommation globale uniquement.
+
+---
+*Article rédigé par Canabang pour HACF.*

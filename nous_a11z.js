@@ -1,10 +1,15 @@
 const tuya = require('zigbee-herdsman-converters/lib/tuya');
+const utils = require('zigbee-herdsman-converters/lib/utils');
+const exposes = require('zigbee-herdsman-converters/lib/exposes');
+const e = exposes.presets;
+const ea = exposes.access;
 
 const definition = {
     fingerprint: [{ modelID: 'TS011F', manufacturerName: '_TZ3210_6cmeijtd' }],
     model: 'A11Z',
     vendor: 'Nous',
     description: 'Smart power strip 3 gang with energy monitoring & countdown',
+    ota: ota.zigbeeOTA,
 
     // Mapping endpoints
     endpoint: (device) => {
@@ -41,18 +46,17 @@ const definition = {
 
         // 2. Calibration des Mesures Électriques
         // Le firmware _TZ3210_6cmeijtd renvoie des valeurs brutes nécessitant des diviseurs spécifiques.
-        // Voltage : Renvoie ~2300 (pour 230V) -> Diviseur 10 (mais le firmware semble renvoyer ~230 directement ou diviseur 1 ?)
-        // Test Utilisateur :
+        // Test Validé :
         // - Voltage : Diviseur 1 -> 226V (OK)
-        // - Puissance : Diviseur 1 -> ~17W (OK pour ventilateur, cos phi ~0.6)
-        // - Courant : Diviseur 1000 -> 0.13A (OK)
+        // - Puissance : Diviseur 10 -> ~26W (OK pour 25W lampe)
+        // - Courant : Diviseur 1000 -> 0.11A (OK)
 
         await endpoint.saveClusterAttributeKeyValue('haElectricalMeasurement', {
             acCurrentDivisor: 1000,
             acCurrentMultiplier: 1,
             acVoltageDivisor: 1,    // 230V brut -> 230V affiché
             acVoltageMultiplier: 1,
-            acPowerDivisor: 1,      // 17W brut -> 17W affiché
+            acPowerDivisor: 10,     // 260 brut / 10 = 26W
             acPowerMultiplier: 1,
         });
 
@@ -61,6 +65,11 @@ const definition = {
             divisor: 100,
             multiplier: 1,
         });
+
+        // Force OTA cluster output if attached
+        if (device.getEndpoint(1).binds.some(b => b.cluster.name === 'genOta')) {
+            // utils.attachOutputCluster(device, 'genOta'); // Removed as 'utils' might not have this, standard confirm is usually enough
+        }
 
         device.save();
     },

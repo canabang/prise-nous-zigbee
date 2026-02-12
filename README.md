@@ -66,7 +66,8 @@ Grâce à la communauté, un convertisseur personnalisé permet de contourner le
 
 ### Étape 1 : Création du Fichier JS
 
-Créez un fichier nommé `nous_a11z.js` dans le dossier de configuration de Zigbee2MQTT (à côté de `configuration.yaml`) :
+Créez un fichier nommé `nous_a11z.js` dans le dossier de configuration de Zigbee2MQTT (à côté de `configuration.yaml`).
+(Vous pouvez trouver le fichier source ici : [`z2m/nous_a11z.js`](z2m/nous_a11z.js))
 
 ```javascript
 const tuya = require('zigbee-herdsman-converters/lib/tuya');
@@ -238,9 +239,9 @@ C'est la carte principale (Mushroom + Stack-in-card). Elle permet de :
 *   "Cat Lock" 😺 : Sécurité enfant activable en un clic.
 
 <details>
-<summary>📋 Voir le code YAML (dashboard_debug_a11z.yaml)</summary>
+<summary>📋 Voir le code YAML (dashboards/dashboard_debug_a11z.yaml)</summary>
 
-*Le code est disponible dans le fichier [`dashboard_debug_a11z.yaml`](dashboard_debug_a11z.yaml)*
+*Le code est disponible dans le fichier [`dashboards/dashboard_debug_a11z.yaml`](dashboards/dashboard_debug_a11z.yaml)*
 </details>
 
 ### 2. L'Analyseur de Cycle (Stats Auto)
@@ -253,19 +254,19 @@ Il génère un rapport précis à la fin du cycle :
 C'est implémenté via un fichier *Package* `template` et une carte Mushroom compacte.
 
 <details>
-<summary>📋 Voir l'installation (cycle_stats_nous.yaml)</summary>
+<summary>📋 Voir l'installation (templates/cycle_stats_nous.yaml)</summary>
 
-1.  Copiez [`cycle_stats_nous.yaml`](cycle_stats_nous.yaml) dans votre dossier templates.
-2.  Ajoutez la carte [`dashboard_stats_nous.yaml`](dashboard_stats_nous.yaml) à votre dashboard.
+1.  Copiez [`templates/cycle_stats_nous.yaml`](templates/cycle_stats_nous.yaml) dans votre dossier templates.
+2.  Ajoutez la carte [`dashboards/dashboard_stats_nous.yaml`](dashboards/dashboard_stats_nous.yaml) à votre dashboard.
 </details>
 
 ### 3. Le "Debug" (Graphiques Précis)
 Pour les puristes, une vue détaillée basée sur `apexcharts-card` permet de zoomer sur les courbes de Tension, Courant et Puissance avec un échantillonnage fin et une moyenne glissante.
 
 <details>
-<summary>📋 Voir le code YAML (dashboard_apex_a11z.yaml)</summary>
+<summary>📋 Voir le code YAML (dashboards/dashboard_apex_a11z.yaml)</summary>
 
-*Le code est disponible dans le fichier [`dashboard_apex_a11z.yaml`](dashboard_apex_a11z.yaml)*
+*Le code est disponible dans le fichier [`dashboards/dashboard_apex_a11z.yaml`](dashboards/dashboard_apex_a11z.yaml)*
 </details>
 
 ## 🧪 Tests à venir

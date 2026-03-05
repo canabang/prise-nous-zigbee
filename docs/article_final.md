@@ -2,8 +2,8 @@
 title: "Test de la Multiprise Connectée Zigbee Nous A11Z : Le retour du roi ?"
 excerpt: "La célèbre multiprise Nous A11Z a fait peau neuve, mais cette révision 2026 cache un défaut de jeunesse. Voici comment la dompter et la transformer en outil de monitoring ultime pour votre électroménager."
 tags: ["#test", "#zigbee", "#nous", "#pub", "#toc"]
-meta_title: "Test Nous A11Z Zigbee : Installation, Fix et Monitoring Lave-Vaisselle"
-meta_description: "Test complet de la nouvelle multiprise Nous A11Z (2026). Problème de firmware, solution via Zigbee2MQTT et monitoring de consommation d'un lave-vaisselle."
+meta_title: "Test Nous A11Z Zigbee : Support Natif Z2M et Monitoring Lave-Vaisselle"
+meta_description: "Test complet de la nouvelle multiprise Nous A11Z (2026). Initialement problématique, elle est désormais supportée nativement par Zigbee2MQTT pour un monitoring parfait."
 image: "../images/prise%20deballe.jpg"
 ---
 
@@ -66,131 +66,36 @@ Sur les forums et les groupes communautaires, la **Nous A11Z** est pourtant souv
 
 En creusant davantage, on réalise que sous la même référence commerciale "A11Z" se cachent plusieurs versions matérielles.
 *   **Les anciens modèles** utilisaient des codes fabricants génériques Tuya (souvent commençant par `_TZ3000_...`) qui étaient correctement reconnus et fonctionnels.
-*   **La nouvelle révision (2026)**, identifiée par le code **`_TZ3210_6cmeijtd`**, utilise un firmware différent qui pose problème.
+*   **La nouvelle révision (2026)**, identifiée par le code **`_TZ3210_6cmeijtd`**, utilise un firmware différent qui a posé problème lors de sa sortie.
 
-C'est finalement sur le GitHub officiel du projet Zigbee2MQTT que je trouve la réponse. Une *issue* récente (numéro [#30799](https://github.com/Koenkk/zigbee2mqtt/issues/30799)) décrit exactement les mêmes symptômes : pilotage groupé et absence de mesures.
-Bonne nouvelle : la communauté est réactive ! Une solution technique a été proposée dans les commentaires et devrait être intégrée nativement dans une prochaine mise à jour de Zigbee2MQTT.
+Fort heureusement, la communauté open-source est incroyablement réactive. Moins de quelques semaines après l'apparition du problème (documenté sur l'issue [#30799](https://github.com/Koenkk/zigbee2mqtt/issues/30799)), un correctif a été proposé et est **désormais intégré nativement depuis la version 2.9.0 de Zigbee2MQTT**.
 
-*À noter que j'ai également testé la version **Dev** (Edge) de Zigbee2MQTT, et le correctif n'y est pas encore intégré à ce jour.*
+![Changelog Z2M](../images/update_fix_z2m.png)
+*Extrait du Changelog officiel validant le support.*
 
-En attendant cette mise à jour officielle, voici comment appliquer le correctif manuellement dès aujourd'hui pour rendre la multiprise fonctionnelle immédiatement.
+> [!NOTE]
+> **Bonne nouvelle !**
+> Si votre conteneur Zigbee2MQTT est à jour, vous n'avez **absolument rien de spécial à faire**. L'appareil est reconnu immédiatement et les trois prises sont pilotables nativement et individuellement.
 
-## 🛠️ La Solution : Le Convertisseur Externe "Unlocker"
+Dès l'inclusion (ou après une simple mise à jour de votre instance Z2M), l'appareil expose correctement les 3 switchs indépendants (`state_l1`, `state_l2`, `state_l3`) ainsi que les sécurités enfants et les mémoires d'état. 
 
-Grâce à la communauté, un convertisseur personnalisé permet de contourner le problème et d'utiliser l'appareil normalement dès maintenant, sans attendre une mise à jour officielle.
-
-### Étape 1 : Création du Fichier JS
-
-Créez un fichier nommé `nous_a11z.js` dans le dossier de configuration de Zigbee2MQTT (à côté de `configuration.yaml`).
-(Vous pouvez trouver le fichier source ici : [`z2m/nous_a11z.js`](../z2m/nous_a11z.js))
-
-```javascript
-const tuya = require('zigbee-herdsman-converters/lib/tuya');
-const utils = require('zigbee-herdsman-converters/lib/utils');
-const exposes = require('zigbee-herdsman-converters/lib/exposes');
-const e = exposes.presets;
-const ea = exposes.access;
-
-const definition = {
-    fingerprint: [{ modelID: 'TS011F', manufacturerName: '_TZ3210_6cmeijtd' }],
-    model: 'A11Z',
-    vendor: 'Nous',
-    description: 'Smart power strip 3 gang with energy monitoring & countdown',
-
-    // Mapping endpoints
-    endpoint: (device) => {
-        return { l1: 1, l2: 2, l3: 3 };
-    },
-
-    // Skip global endpoints for electrical measurements
-    meta: {
-        multiEndpoint: true,
-        multiEndpointSkip: ['energy', 'current', 'voltage', 'power'],
-    },
-
-    extend: [
-        // Configuration moderne Tuya pour Switch + Mesures
-        tuya.modernExtend.tuyaOnOff({
-            electricalMeasurements: true,   // Active la mesure
-            powerOutageMemory: true,        // Active la mémoire d'état
-            onOffCountdown: true,           // Active le compte à rebours
-            indicatorMode: true,            // Active le mode LED
-            childLock: true,                // Active le verrouillage enfant
-            endpoints: ['l1', 'l2', 'l3'],  // Définit les 3 prises
-        }),
-        // Sondage régulier pour la mise à jour des valeurs
-        tuya.modernExtend.electricityMeasurementPoll({
-            metering: (device) => [100, 160, 192].includes(device.applicationVersion) || (device.softwareBuildID && ["1.0.5"].includes(device.softwareBuildID)),
-        }),
-    ],
-
-    // Illustration du Polling
-    // ![Poll Interval](../images/poll%20interval.png)
-
-    configure: async (device, coordinatorEndpoint, logger) => {
-        const endpoint = device.getEndpoint(1);
-
-        // 1. Envoi du Magic Packet (Nécessaire pour séparer les canaux sur certains firmwares)
-        await tuya.configureMagicPacket(device, coordinatorEndpoint, logger);
-
-        // 2. Calibration des Mesures Électriques
-        // Le firmware _TZ3210_6cmeijtd renvoie des valeurs brutes nécessitant des diviseurs spécifiques.
-        // Test Validé :
-        // - Voltage : Diviseur 1 -> 226V (OK)
-        // - Puissance : Diviseur 10 -> ~26W (OK pour 25W lampe)
-        // - Courant : Diviseur 1000 -> 0.11A (OK)
-
-        await endpoint.saveClusterAttributeKeyValue('haElectricalMeasurement', {
-            acCurrentDivisor: 1000,
-            acCurrentMultiplier: 1,
-            acVoltageDivisor: 1,    // 230V brut -> 230V affiché
-            acVoltageMultiplier: 1,
-            acPowerDivisor: 10,     // 260 brut / 10 = 26W
-            acPowerMultiplier: 1,
-        });
-
-        // Configuration du metering (Energie cumulée)
-        await endpoint.saveClusterAttributeKeyValue('seMetering', {
-            divisor: 100,
-            multiplier: 1,
-        });
-
-        device.save();
-    },
-};
-
-module.exports = definition;
-```
-
-### Étape 2 : Activation
-
-Ajoutez ceci à votre `configuration.yaml` :
-
-```yaml
-external_converters:
-  - nous_a11z.js
-```
-
-### Étape 3 : Redémarrage
-
-Redémarrez Zigbee2MQTT. Reconfigurer la multiprise ou désapairer et réapairer la. Elle devrait maintenant exposer correctement 3 switchs indépendants (`state_l1`, `state_l2`, `state_l3`) ainsi que les verrous enfants et les mémoires d'état. N'oubliez pas de cliquer sur "Reconfigurer" dans l'interface si les valeurs électriques semblent étranges au début.
-
-![Commandes individuelles Z2M](../images/commandes%2001%20apres%20fix.png)
-![Détail commandes Z2M](../images/commandes%2002%20apres%20fix.png)
+![Inclusion Z2M 2.9.0](../images/z2m_2.9.0_prise.png)
+*Les commandes individuelles parfaitement reconnues nativement dans Zigbee2MQTT 2.9.0*
 
 Dans Home Assistant, vous retrouvez désormais vos entités bien séparées :
 
-![Intégration HA 1](../images/ha%2001%20apres%20fix.png)
-![Intégration HA 2](../images/ha%2002%20apres%20fix.png)
+![Intégration HA Commandes](../images/controle.2.9.0.ha.png)
+![Intégration HA Capteurs](../images/capteurs.2.9.0.ha.png)
+![Intégration HA Configuration](../images/configuration.2.9.0.ha.png)
 
-*Note : La tension (Voltage) peut s'afficher autour de 20-23V au lieu de 230V, signe que le diviseur (10) pourrait être ajusté à 1 selon votre modèle exact, mais la commande fonctionne !*
+---
 
-### Étape 4 (Optionnelle) : Optimisation du Polling
+### Optimisation du Polling
 
 Pour avoir des **graphiques fluides** (comme ceux présentés dans cet article), il est recommandé de réduire l'intervalle de remontée des infos :
 1.  Dans **Zigbee2MQTT**, cliquez sur l'appareil **Nous A11Z**.
 2.  Allez dans l'onglet **Paramètres (Spécifique)**.
-3.  Cherchez **Measurement Poll Interval** et réglez-le sur **10 secondes** (au lieu de 60 par défaut).
+3.  Cherchez **Measurement Poll Interval** et réglez-le sur **10 secondes** (au lieu de 60 par défaut, vous pourrez repasser a 60 aprés vos tests).
 4.  Sauvegardez.
 
 Cela permet d'avoir une mesure quasi temps-réel, indispensable pour détecter les pics de consommation d'un cycle de lavage.
@@ -201,11 +106,11 @@ Cela permet d'avoir une mesure quasi temps-réel, indispensable pour détecter l
 Pour valider les mesures, une calibration a été effectuée avec une charge résistive de référence (Lampe à incandescence "Lava Lamp" de 25W).
 
 *   **Protocole** : Mesure sur Prise 1, puis Prise 2.
-*   **Résultats après patch** :
+*   **Résultats mesurés** :
     *   **Tension** : 228 V (Cohérent réseau).
     *   **Puissance** : 26 W (Pour 25W théorique -> Précision excellente).
     *   **Courant** : 0.11 A.
-*   **Conclusion du test** : La calibration du fichier `nous_a11z.js` est validée (`acPowerDivisor: 10` et `acVoltageDivisor: 1`). Et on valide aussi que la remontée consommation est **globale** (pas de mesure par prise, pour l'instant).
+*   **Conclusion du test** : La prise remonte des données précises et la remontée consommation est **globale** (pas de mesure par prise individuelle, c'est la seule limitation de ce modèle).
 
 ### Test 02 : Mémoire d'État (Power Outage Memory)
 *   **Protocole** : Coupure brutale de l'alimentation alors que les prises sont dans des états différents (ON/OFF).
@@ -980,14 +885,114 @@ Plusieurs tests restent à faire avec cette multiprise notamment :
 
 ## Conclusion
 
-Une fois patchée, la **Nous A11Z** redevient l'excellent rapport qualité/prix qu'elle a toujours été. Les prises commutent bien une par une et la mesure de consommation est précise.
-Dommage que la mesure de consommation soit **globale** et pas par prise individuelle, ce qui peut limiter certains usages précis.
+La **Nous A11Z** (version 2026) a connu un démarrage difficile à cause d'un firmware capricieux, mais grâce à la communauté Zigbee2MQTT, ce n'est plus qu'un mauvais souvenir.
 
-Je pensais l'utiliser en cuisine pour entre autres gérer le lave-vaisselle, mais finalement, à cause de cette mesure globale, elle va finir derrière une TV et un ampli pour couper les veilles.
+Aujourd'hui, c'est un produit "plug & play", reconnu nativement, qui offre un excellent rapport qualité/prix. Les prises commutent individuellement avec l'effet "pop-corn" pour protéger des appels de charge, et la mesure de consommation globale est d'une grande précision.
+Dommage que la mesure de consommation soit **globale** et pas par prise individuelle, ce qui peut limiter certains usages pointus d'analyse de charge séparée.
+
+Je pensais l'utiliser en cuisine pour entre autres gérer le lave-vaisselle, mais finalement, à cause de cette mesure globale, elle va finir derrière une TV et un ampli pour couper les veilles tout en monitorant la consommation complète du meuble.
 
 ### Résumé
-*   ✅ **Les +** : Qualité de fabrication, 3 prises indépendantes, routeur Zigbee stable, Prix.
-*   ❌ **Les -** : Nécessite un correctif manuel (pour l'instant) sur les modèles 2026, mesure de consommation globale uniquement.
+*   ✅ **Les +** : Qualité de fabrication, 3 prises individuelles indépendantes, routeur Zigbee stable, intégration native fluide, Prix !
+*   ❌ **Les -** : Mesure énergétique globale uniquement (pas détaillée par plot).
+
+---
+
+## 🗄️ Annexe : L'Ancienne Méthode Manuelle (Firmwares < 2.9.0)
+
+> [!WARNING]
+> **Méthode Obsolète (Archive)**
+>
+> *Le tutoriel ci-dessous est conservé uniquement pour de l'archivage ou si vous êtes bloqué sur une très ancienne version de Zigbee2MQTT (< 2.9.0).*
+
+Grâce à la communauté, un convertisseur personnalisé permettait de contourner le problème et d'utiliser l'appareil normalement en attendant la mise à jour officielle.
+
+### Étape 1 : Création du Fichier JS
+
+Créez un fichier nommé `nous_a11z.js` dans le dossier de configuration de Zigbee2MQTT (à côté de `configuration.yaml`).
+(Vous pouvez trouver le fichier source ici : [`z2m/nous_a11z.js`](../z2m/nous_a11z.js))
+
+```javascript
+const tuya = require('zigbee-herdsman-converters/lib/tuya');
+const utils = require('zigbee-herdsman-converters/lib/utils');
+const exposes = require('zigbee-herdsman-converters/lib/exposes');
+const e = exposes.presets;
+const ea = exposes.access;
+
+const definition = {
+    fingerprint: [{ modelID: 'TS011F', manufacturerName: '_TZ3210_6cmeijtd' }],
+    model: 'A11Z',
+    vendor: 'Nous',
+    description: 'Smart power strip 3 gang with energy monitoring & countdown',
+
+    // Mapping endpoints
+    endpoint: (device) => {
+        return { l1: 1, l2: 2, l3: 3 };
+    },
+
+    // Skip global endpoints for electrical measurements
+    meta: {
+        multiEndpoint: true,
+        multiEndpointSkip: ['energy', 'current', 'voltage', 'power'],
+    },
+
+    extend: [
+        // Configuration moderne Tuya pour Switch + Mesures
+        tuya.modernExtend.tuyaOnOff({
+            electricalMeasurements: true,   // Active la mesure
+            powerOutageMemory: true,        // Active la mémoire d'état
+            onOffCountdown: true,           // Active le compte à rebours
+            indicatorMode: true,            // Active le mode LED
+            childLock: true,                // Active le verrouillage enfant
+            endpoints: ['l1', 'l2', 'l3'],  // Définit les 3 prises
+        }),
+        // Sondage régulier pour la mise à jour des valeurs
+        tuya.modernExtend.electricityMeasurementPoll({
+            metering: (device) => [100, 160, 192].includes(device.applicationVersion) || (device.softwareBuildID && ["1.0.5"].includes(device.softwareBuildID)),
+        }),
+    ],
+
+    configure: async (device, coordinatorEndpoint, logger) => {
+        const endpoint = device.getEndpoint(1);
+
+        // 1. Envoi du Magic Packet (Nécessaire pour séparer les canaux sur certains firmwares)
+        await tuya.configureMagicPacket(device, coordinatorEndpoint, logger);
+
+        // 2. Calibration des Mesures Électriques
+        await endpoint.saveClusterAttributeKeyValue('haElectricalMeasurement', {
+            acCurrentDivisor: 1000,
+            acCurrentMultiplier: 1,
+            acVoltageDivisor: 1,    // 230V brut -> 230V affiché
+            acVoltageMultiplier: 1,
+            acPowerDivisor: 10,     // 260 brut / 10 = 26W
+            acPowerMultiplier: 1,
+        });
+
+        // Configuration du metering (Energie cumulée)
+        await endpoint.saveClusterAttributeKeyValue('seMetering', {
+            divisor: 100,
+            multiplier: 1,
+        });
+
+        device.save();
+    },
+};
+
+module.exports = definition;
+```
+
+### Étape 2 : Activation
+
+Ajoutez ceci à votre `configuration.yaml` :
+
+```yaml
+external_converters:
+  - nous_a11z.js
+```
+
+### Étape 3 : Redémarrage
+
+Redémarrez Zigbee2MQTT. Elle devrait maintenant exposer correctement 3 switchs indépendants (`state_l1`, `state_l2`, `state_l3`). *Note : Sur d'anciennes versions du firmware, la tension (Voltage) pouvait s'afficher autour de 20-23V au lieu de 230V.*
 
 ---
 *Article rédigé par Canabang pour HACF.*

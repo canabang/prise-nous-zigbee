@@ -878,11 +878,6 @@ cards:
         }
 ```
 
-## 🧪 Tests
-
-Plusieurs tests restent à faire avec cette multiprise notamment :
-*   Validation de la stabilité du mesh Zigbee.
-
 ## Conclusion
 
 La **Nous A11Z** (version 2026) a connu un démarrage difficile à cause d'un firmware capricieux, mais grâce à la communauté Zigbee2MQTT, ce n'est plus qu'un mauvais souvenir.
